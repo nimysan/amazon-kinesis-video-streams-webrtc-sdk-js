@@ -44,6 +44,45 @@ let timeToSetUpViewerMedia = 0;
 let timeToFirstFrameFromOffer = 0;
 let timeToFirstFrameFromViewerStart = 0;
 
+
+
+
+// 存储消息的数组
+const messages = [
+];
+
+// 存储消息
+function storeMessage(id, fromTimestamp) {
+    const currentTimestampMs = Date.now();
+    debugger
+    const message = { id: id, cost: currentTimestampMs - fromTimestamp };
+    messages.push(message);
+}
+// 统计总数量
+function getTotalCount() {
+    return messages.length;
+}
+
+// 计算 cost 的 p95、p90 和平均值
+function calculateCostMetrics() {
+    const costs = messages.map(message => message.cost);
+    costs.sort((a, b) => a - b);
+
+    const totalCount = costs.length;
+    const sum = costs.reduce((acc, cost) => acc + cost, 0);
+    const avg = sum / totalCount;
+
+    const p95Index = Math.floor(totalCount * 0.95);
+    const p95 = costs[p95Index];
+
+    const p90Index = Math.floor(totalCount * 0.9);
+    const p90 = costs[p90Index];
+
+    const count = getTotalCount();
+
+    return { p95, p90, avg, count };
+}
+
 let metrics = {
     viewer: {
         waitTime: {
@@ -52,7 +91,7 @@ let metrics = {
             endTime: '',
             tooltip: 'Time duration the viewer was waiting for the master to start (time to start the SDK after the viewer signaling channel was connected)',
             color: 'yellow',
-        }, 
+        },
         signaling: {
             name: 'signaling-viewer',
             startTime: '',
@@ -66,7 +105,7 @@ let metrics = {
             endTime: '',
             tooltip: 'Time taken to setup a media player on the viewer-side by seeking permissions for mic / camera (if needed), fetch tracks from the same and add them to the peer connection',
             color: '#9575CD',
-        }, 
+        },
         offAnswerTime: {
             name: 'sdp-exchange-viewer',
             startTime: '',
@@ -87,7 +126,7 @@ let metrics = {
             endTime: '',
             tooltip: 'Time taken for the API call to describeSignalingChannel on the viewer',
             color: '#EF9A9A',
-        }, 
+        },
         channelEndpoint: {
             name: 'signaling-viewer-get-signaling-channel-endpoint',
             startTime: '',
@@ -115,7 +154,7 @@ let metrics = {
             endTime: '',
             tooltip: 'Time taken to gather all ice candidates on the viewer',
             color: '#90CAF9',
-        }, 
+        },
         peerConnection: {
             name: 'pc-establishment-viewer',
             startTime: '',
@@ -128,8 +167,8 @@ let metrics = {
             startTime: '',
             endTime: '',
             tooltip: 'Time to first frame after the viewer\'s peer connection has been established',
-            color: '#2196F3', 
-        }, 
+            color: '#2196F3',
+        },
         ttff: {
             name: 'ttff',
             startTime: '',
@@ -152,7 +191,7 @@ let metrics = {
             endTime: '',
             tooltip: 'Time duration the master was waiting for the viewer to start (time to click the button after the master signaling channel was connected)',
             color: 'yellow',
-        }, 
+        },
         signaling: {
             name: 'signaling-master',
             startTime: '',
@@ -215,7 +254,7 @@ let metrics = {
             endTime: '',
             tooltip: 'Time taken to gather all ice candidates on the master',
             color: '#90CAF9',
-        }, 
+        },
         peerConnection: {
             name: 'pc-establishment-master',
             startTime: '',
@@ -249,9 +288,15 @@ let dataChannelLatencyCalcMessage = {
     'lastMessageFromViewerTs': ''
 }
 
-async function startViewer(localView, remoteView, formValues, onStatsReport, remoteMessage) {
+async function startViewer(localView, remoteView, formValues, onStatsReport, remoteMessage, remoteMessageStatistics) {
     try {
         console.log('[VIEWER] Client id is:', formValues.clientId);
+        messages.splice(0, messages.length); //清空
+        const showSt = setInterval(() => {
+            const st = calculateCostMetrics();
+            remoteMessageStatistics.append(JSON.stringify(st));
+        }, 5000);
+
         viewerButtonPressed = new Date();
 
         if (formValues.enableProfileTimeline) {
@@ -274,7 +319,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
                     metrics.master.iceGathering.endTime = metrics.viewer.ttff.endTime;
                 }
             }
-            if(formValues.enableDQPmetrics) {
+            if (formValues.enableDQPmetrics) {
                 timeToFirstFrameFromOffer = metrics.viewer.ttff.endTime - metrics.viewer.offAnswerTime.startTime;
                 timeToFirstFrameFromViewerStart = metrics.viewer.ttff.endTime - viewerButtonPressed.getTime();
             }
@@ -348,7 +393,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
         }
 
         metrics.viewer.signaling.startTime = Date.now();
-        
+
         // Create KVS client
         const kinesisVideoClient = new AWS.KinesisVideo({
             region: formValues.region,
@@ -375,7 +420,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
 
         if (formValues.ingestMedia) {
             console.log('[VIEWER] Determining whether this signaling channel is in media ingestion mode.');
-            
+
             metrics.viewer.describeMediaStorageConfiguration.startTime = Date.now();
 
             const mediaStorageConfiguration = await kinesisVideoClient
@@ -409,7 +454,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
                 },
             })
             .promise();
-        
+
         metrics.viewer.channelEndpoint.endTime = Date.now();
 
         const endpointsByProtocol = getSignalingChannelEndpointResponse.ResourceEndpointList.reduce((endpoints, endpoint) => {
@@ -436,9 +481,9 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
                 ChannelARN: channelARN,
             })
             .promise();
-        
+
         metrics.viewer.iceServerConfig.endTime = Date.now();
-        
+
         const iceServers = [];
         // Don't add stun if user selects TURN only or NAT traversal disabled
         if (!formValues.natTraversalDisabled && !formValues.forceTURN) {
@@ -475,9 +520,9 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
 
         const resolution = formValues.widescreen
             ? {
-                  width: { ideal: 1280 },
-                  height: { ideal: 720 },
-              }
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+            }
             : { width: { ideal: 640 }, height: { ideal: 480 } };
         const constraints = {
             video: formValues.sendVideo ? resolution : false,
@@ -497,7 +542,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
                     metrics.viewer.iceGathering.endTime = Date.now();
                 }
             };
-    
+
             viewer.peerConnection.onconnectionstatechange = (event) => {
                 if (viewer.peerConnection.connectionState === 'new' || viewer.peerConnection.connectionState === 'connecting') {
                     metrics.viewer.peerConnection.startTime = Date.now();
@@ -507,7 +552,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
                     metrics.viewer.ttffAfterPc.startTime = metrics.viewer.peerConnection.endTime;
                 }
             };
-    
+
             viewer.peerConnection.oniceconnectionstatechange = (event) => {
                 if (viewer.peerConnection.iceConnectionState === 'connected') {
                     viewer.peerConnection.getStats().then(stats => {
@@ -518,9 +563,9 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
                         });
                     });
                 }
-            };    
+            };
         }
-        
+
         if (formValues.openDataChannel) {
             const dataChannelObj = viewer.peerConnection.createDataChannel('kvsDataChannel');
             viewer.dataChannel = dataChannelObj;
@@ -534,8 +579,9 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
             };
             // Callback for the data channel created by viewer
             let onRemoteDataMessageViewer = (message) => {
-                
-                remoteMessage.append(`${message.data}\n\n`);
+                debugger
+                // remoteMessage.append(`${message.data}\n\n`);
+                storeMessage('1', message.data);
                 if (formValues.enableProfileTimeline) {
 
                     // The datachannel first sends a message of the following format with firstMessageFromViewerTs attached, 
@@ -552,55 +598,55 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
                                 dataChannelMessage.lastMessageFromViewerTs = Date.now().toString();
                                 metrics.master.dataChannel.startTime = Number(dataChannelMessage.firstMessageFromMasterTs);
                                 metrics.master.dataChannel.endTime = Number(dataChannelMessage.secondMessageFromMasterTs);
-        
+
                                 metrics.viewer.dataChannel.startTime = Number(dataChannelMessage.firstMessageFromViewerTs);
                                 metrics.viewer.dataChannel.endTime = Number(dataChannelMessage.secondMessageFromViewerTs);
                             }
                             dataChannelMessage.content = 'Message from JS viewer';
                             dataChannelObj.send(JSON.stringify(dataChannelMessage));
-                        
+
                         } else if (dataChannelMessage.hasOwnProperty('peerConnectionStartTime')) {
                             metrics.master.peerConnection.startTime = dataChannelMessage.peerConnectionStartTime;
                             metrics.master.peerConnection.endTime = dataChannelMessage.peerConnectionEndTime;
-        
+
                             metrics.master.ttffAfterPc.startTime = metrics.master.peerConnection.endTime;
-                        
+
                         } else if (dataChannelMessage.hasOwnProperty('signalingStartTime')) {
                             metrics.master.signaling.startTime = dataChannelMessage.signalingStartTime;
                             metrics.master.signaling.endTime = dataChannelMessage.signalingEndTime;
-        
+
                             if (metrics.viewer.ttff.startTime < metrics.master.signaling.startTime) {
                                 metrics.viewer.ttff.startTime = metrics.master.signaling.startTime;
                             }
-        
+
                             metrics.master.waitTime.startTime = metrics.master.signaling.endTime;
                             metrics.viewer.waitTime.endTime = metrics.master.signaling.startTime;
-        
+
                             metrics.master.offAnswerTime.startTime = dataChannelMessage.offerReceiptTime;
                             metrics.master.offAnswerTime.endTime = dataChannelMessage.sendAnswerTime;
-        
+
                             metrics.master.describeChannel.startTime = dataChannelMessage.describeChannelStartTime;
                             metrics.master.describeChannel.endTime = dataChannelMessage.describeChannelEndTime;
-        
+
                             metrics.master.channelEndpoint.startTime = dataChannelMessage.getSignalingChannelEndpointStartTime;
                             metrics.master.channelEndpoint.endTime = dataChannelMessage.getSignalingChannelEndpointEndTime;
-        
+
                             metrics.master.iceServerConfig.startTime = dataChannelMessage.getIceServerConfigStartTime;
                             metrics.master.iceServerConfig.endTime = dataChannelMessage.getIceServerConfigEndTime;
-        
+
                             metrics.master.getToken.startTime = dataChannelMessage.getTokenStartTime;
                             metrics.master.getToken.endTime = dataChannelMessage.getTokenEndTime;
-        
+
                             metrics.master.createChannel.startTime = dataChannelMessage.createChannelStartTime;
                             metrics.master.createChannel.endTime = dataChannelMessage.createChannelEndTime;
-        
+
                             metrics.master.connectAsMaster.startTime = dataChannelMessage.connectStartTime;
                             metrics.master.connectAsMaster.endTime = dataChannelMessage.connectEndTime;
-                            
+
                         } else if (dataChannelMessage.hasOwnProperty('candidateGatheringStartTime')) {
                             metrics.master.iceGathering.startTime = dataChannelMessage.candidateGatheringStartTime;
                             metrics.master.iceGathering.endTime = dataChannelMessage.candidateGatheringEndTime;
-                        } 
+                        }
                     } catch (e) {
                         console.log("Receiving a non-json message");
                     }
@@ -637,7 +683,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, rem
             metrics.viewer.connectAsViewer.endTime = Date.now();
             metrics.viewer.signaling.endTime = metrics.viewer.connectAsViewer.endTime;
             metrics.viewer.waitTime.startTime = metrics.viewer.signaling.endTime;
-            
+
             console.log('[VIEWER] Connected to signaling service');
 
             metrics.viewer.setupMediaPlayer.startTime = Date.now();
@@ -839,7 +885,7 @@ function sendViewerMessage(message) {
 function profilingCalculations() {
     let headerElement = document.getElementById("timeline-profiling-header");
     headerElement.textContent = "Profiling Timeline chart";
-    google.charts.load('current', {packages:['timeline']});
+    google.charts.load('current', { packages: ['timeline'] });
     google.charts.setOnLoadCallback(drawChart);
     clearInterval(viewer.profilingInterval);
 }
@@ -1101,9 +1147,9 @@ function getCalculatedEpoch(time, diffInMillis, minTime) {
 
 function drawChart() {
     const viewerOrder = ['signaling', 'describeChannel', 'describeMediaStorageConfiguration', 'channelEndpoint', 'iceServerConfig', 'connectAsViewer', 'setupMediaPlayer', 'waitTime',
-                    'offAnswerTime', 'iceGathering', 'peerConnection', 'dataChannel', 'ttffAfterPc', 'ttff'];
-    const masterOrder = ['signaling', 'describeChannel', 'channelEndpoint', 'iceServerConfig', 'getToken', 'createChannel', 'connectAsMaster', 'waitTime', 
-                    'offAnswerTime', 'iceGathering', 'peerConnection', 'dataChannel', 'ttffAfterPc'];
+        'offAnswerTime', 'iceGathering', 'peerConnection', 'dataChannel', 'ttffAfterPc', 'ttff'];
+    const masterOrder = ['signaling', 'describeChannel', 'channelEndpoint', 'iceServerConfig', 'getToken', 'createChannel', 'connectAsMaster', 'waitTime',
+        'offAnswerTime', 'iceGathering', 'peerConnection', 'dataChannel', 'ttffAfterPc'];
     const container = document.getElementById('timeline-chart');
     const rowHeight = 45;
     const chart = new google.visualization.Timeline(container);
@@ -1126,10 +1172,10 @@ function drawChart() {
             let duration = endTime - startTime;
 
             if (duration > 0) {
-                dataTable.addRow([ metrics.master[key].name, null, getTooltipContent(metrics.master[key].tooltip, duration), startTime, endTime ]);
+                dataTable.addRow([metrics.master[key].name, null, getTooltipContent(metrics.master[key].tooltip, duration), startTime, endTime]);
                 colors.push(metrics.master[key].color);
                 containerHeight += rowHeight;
-            } 
+            }
         }
     });
 
@@ -1140,10 +1186,10 @@ function drawChart() {
             let duration = endTime - startTime;
 
             if (duration > 0) {
-                dataTable.addRow([ metrics.viewer[key].name, null, getTooltipContent(metrics.viewer[key].tooltip, duration), startTime, endTime ]);
+                dataTable.addRow([metrics.viewer[key].name, null, getTooltipContent(metrics.viewer[key].tooltip, duration), startTime, endTime]);
                 colors.push(metrics.viewer[key].color);
                 containerHeight += rowHeight;
-            } 
+            }
         }
     });
 

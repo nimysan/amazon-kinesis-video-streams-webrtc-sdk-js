@@ -183,7 +183,8 @@ $('#master-button').click(async () => {
     printFormValues(formValues);
 
     startMaster(localView, remoteView, formValues, onStatsReport, event => {
-        remoteMessage.append(`${event.data}\n`);
+        debugger
+        remoteMessage.append(`-----> ${event.data}\n`);
     });
 });
 
@@ -214,6 +215,8 @@ $('#viewer-button').click(async () => {
     const remoteView = $('#viewer .remote-view')[0];
     const localMessage = $('#viewer .local-message')[0];
     const remoteMessage = $('#viewer .remote-message')[0];
+    const remoteMessageStatistics = $('.remote-message-statistics')[0];
+    
     const formValues = getFormValues();
 
     if (formValues.enableDQPmetrics) {
@@ -231,7 +234,7 @@ $('#viewer-button').click(async () => {
 
     printFormValues(formValues);
 
-    startViewer(localView, remoteView, formValues, onStatsReport, remoteMessage);
+    startViewer(localView, remoteView, formValues, onStatsReport, remoteMessage, remoteMessageStatistics);
 });
 
 $('#stop-viewer-button').click(onStop);
