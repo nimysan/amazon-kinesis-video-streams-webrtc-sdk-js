@@ -9,7 +9,7 @@
 ## BJS(北京) KVS - 打洞成功 - 150ms
 
 <video width="320" height="240" controls>
-    <source src="./video_latency/直接打通-视频延迟.mp4" type="video/mp4">
+    <source src="https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/master/video_latency/%E7%9B%B4%E6%8E%A5%E6%89%93%E9%80%9A-%E8%A7%86%E9%A2%91%E5%BB%B6%E8%BF%9F.mp4" type="video/mp4">
 </video>
 
 ## BJS(北京) KVS - 转发模式 - 250ms
