@@ -1,3 +1,18 @@
+# 一些测试结果分享
+
+视频延迟测试
+
+〉 测试设备都在国内 - 江苏
+
+|  场景   | 路径  |  延迟 | 说明 |
+|  ----  | ----  |----  | ----  |
+| KVS中专服务器 - 北京 - 穿透  | ./ |单元格 |单元格 |
+| KVS中专服务器 - 北京 - 转发  | 单元格 |单元格 |单元格 |
+
+
+
+
+
 # Amazon Kinesis Video Streams WebRTC SDK for JavaScript
 
 [![NPM version](https://img.shields.io/npm/v/amazon-kinesis-video-streams-webrtc.svg?style=flat-square)](https://www.npmjs.com/package/amazon-kinesis-video-streams-webrtc)
