@@ -6,8 +6,8 @@
 
 |  场景   | 路径  |  延迟 | 说明 |
 |  ----  | ----  |----  | ----  |
-| KVS中专服务器 - 北京 - 穿透  | ./ |单元格 |单元格 |
-| KVS中专服务器 - 北京 - 转发  | 单元格 |单元格 |单元格 |
+| KVS中专服务器 - 北京 - 穿透  | [视频](https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/master/video_latency/%E7%9B%B4%E6%8E%A5%E6%89%93%E9%80%9A-%E8%A7%86%E9%A2%91%E5%BB%B6%E8%BF%9F.mp4) |单元格 |单元格 |
+| KVS中专服务器 - 北京 - 转发  | [视频](https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/master/video_latency/%E8%BD%AC%E5%8F%91-%E5%8C%97%E4%BA%AC.mp4) |单元格 |单元格 |
 
 
 
