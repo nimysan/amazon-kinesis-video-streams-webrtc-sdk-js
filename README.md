@@ -37,7 +37,7 @@ https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/maste
 
 ### 经过 China Region 北京中转的数据
 
-![img](./video_latency/global_region_东京.png)
+![img](./video_latency/china_region_北京.png)
 
 ### 经过 Global Region 东京中转的数据
 
