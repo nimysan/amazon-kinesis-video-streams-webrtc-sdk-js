@@ -1,13 +1,35 @@
-# 一些测试结果分享
+# KVS服务简单测试结果分享
 
-视频延迟测试
+测试环境说明
 
-〉 测试设备都在国内 - 江苏
+1. 测试设备都在国内 - 江苏 (手机和网页都在同一个家庭WI-FI内)
 
-|  场景   | 路径  |  延迟 | 说明 |
-|  ----  | ----  |----  | ----  |
-| KVS中专服务器 - 北京 - 穿透  | [视频](https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/master/video_latency/%E7%9B%B4%E6%8E%A5%E6%89%93%E9%80%9A-%E8%A7%86%E9%A2%91%E5%BB%B6%E8%BF%9F.mp4) |单元格 |单元格 |
-| KVS中专服务器 - 北京 - 转发  | [视频](https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/master/video_latency/%E8%BD%AC%E5%8F%91-%E5%8C%97%E4%BA%AC.mp4) |单元格 |单元格 |
+2. 通过观察秒表差异看视频延迟 
+
+## BJS(北京) KVS - 打洞成功 - 150ms
+
+<video width="320" height="240" controls>
+    <source src="./video_latency/直接打通-视频延迟.mp4" type="video/mp4">
+</video>
+
+## BJS(北京) KVS - 转发模式 - 250ms
+
+<video width="320" height="240" controls>
+    <source src="./video_latency/转发-北京.mp4" type="video/mp4">
+</video>
+
+## Global Region (东京) KVS - 打洞成功 - 150ms
+
+<video width="320" height="240" controls>
+    <source src="./video_latency/东京-穿透.mp4" type="video/mp4">
+</video>
+
+## Global Region (东京) KVS - 转发模式 - 300ms
+
+<video width="320" height="240" controls>
+    <source src="./video_latency/海外-东京-转发.mp4" type="video/mp4">
+</video>
+
 
 
 
