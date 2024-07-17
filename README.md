@@ -12,6 +12,9 @@
     <source src="https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/master/video_latency/%E7%9B%B4%E6%8E%A5%E6%89%93%E9%80%9A-%E8%A7%86%E9%A2%91%E5%BB%B6%E8%BF%9F.mp4" type="video/mp4">
 </video>
 
+https://github.com/nimysan/amazon-kinesis-video-streams-webrtc-sdk-js/blob/master/video_latency/%E7%9B%B4%E6%8E%A5%E6%89%93%E9%80%9A-%E8%A7%86%E9%A2%91%E5%BB%B6%E8%BF%9F.mp4
+
+
 ## BJS(北京) KVS - 转发模式 - 250ms
 
 <video width="320" height="240" controls>
@@ -30,6 +33,15 @@
     <source src="./video_latency/海外-东京-转发.mp4" type="video/mp4">
 </video>
 
+## DataChannel 延迟数据分享
+
+### 经过 China Region 北京中转的数据
+
+![img](./video_latency/global_region_东京.png)
+
+### 经过 Global Region 东京中转的数据
+
+![img](./video_latency/global_region_东京.png)
 
 
 
